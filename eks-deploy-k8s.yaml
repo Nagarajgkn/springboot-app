@@ -17,11 +17,12 @@ spec:
       containers:
       - name: my-springboot-app
         image: nagubujji/dev:latest
-        imagePullPolicy: Always
+     # imagePullPolicy: Always
         ports:
         - containerPort: 8085
           name: http
           protocol: TCP
+      imagePullPolicy: Always  
 # service type loadbalancer       
 ---
 apiVersion: v1
