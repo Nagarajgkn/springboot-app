@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: my-springboot-app
-        image: nagubujji/dev:latest
+        image: nagubujji/dev:33
         imagePullPolicy: Always
         ports:
         - containerPort: 8085
