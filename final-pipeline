@@ -1,0 +1,37 @@
+pipeline {
+    agent any
+        stages {
+        stage('check out') {
+            steps {
+                git branch: 'main', url: 'https://github.com/Nagarajgkn/springboot-app.git'
+            }
+        }
+        stage('create binaries'){
+            steps{
+                sh "mvn clean install"
+                 sh "cp -R /var/lib/jenkins/workspace/abc/target/springbootApp.jar ."
+                 sh "mv springbootApp.jar springbootApp-${BUILD_NUMBER}.jar"
+            }
+        }
+        stage('create docker image'){
+            steps{
+            sh "docker rmi -f nagubujji/dev:latest"    
+            sh "docker build -t dev:${BUILD_NUMBER} ."
+            sh "docker tag dev:${BUILD_NUMBER} nagubujji/dev:${BUILD_NUMBER}"
+            withCredentials([usernamePassword(credentialsId: 'new', passwordVariable: 'pass', usernameVariable: 'user')]) {
+            sh "docker login -u ${user} -p ${pass}"
+            
+            sh "docker push nagubujji/dev:${BUILD_NUMBER}"
+            }
+            }
+        }
+        stage('deploy k8s cluster'){
+            steps{
+               withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'demo', namespace: '', restrictKubeConfigAccess: false, serverUrl: '') {
+               sh "sed -i 's/latest/${BUILD_NUMBER}/g' eks-deploy-k8s.yaml"
+               sh "kubectl apply -f eks-deploy-k8s.yaml -n nagg"
+            }
+        }
+    }
+}
+}
